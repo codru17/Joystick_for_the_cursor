@@ -3,7 +3,6 @@ import os
 import time
 import schedule
 
-# Initialize serial connection globally
 arduino = serial.Serial('com3', 9600)
 
 def main_func():
