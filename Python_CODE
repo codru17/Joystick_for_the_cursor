@@ -1,32 +1,62 @@
 import serial
-import os
 import time
+import pyautogui
 import schedule
 
-arduino = serial.Serial('com3', 9600)
+pyautogui.FAILSAFE = False
+PORT = 'COM4'  # Schimbă cu portul tău corect
+BAUD = 115200
+
+arduino = None
+
+def connect_arduino():
+    global arduino
+    try:
+        arduino = serial.Serial(PORT, BAUD, timeout=0.01)
+        time.sleep(2)
+        print("Conectat cu succes la Arduino!")
+    except Exception:
+        arduino = None
+
+connect_arduino()
 
 def main_func():
+    pos = pyautogui.position()
+    global arduino
+    if arduino is None or not arduino.is_open:
+        print("Se încearcă reconectarea...")
+        connect_arduino()
+        return
+
     try:
         if arduino.in_waiting > 0:
             arduino_data = arduino.readline()
-            decoded_values = arduino_data.decode("utf-8").strip()
-            list_values = decoded_values.split('x')
-
-            list_in_floats = []
-            for item in list_values:
-                if item: 
-                    list_in_floats.append(float(item))
-            print(f'Collected {list_in_floats}')
+            decoded_values = arduino_data.decode("utf-8", errors="ignore").strip()
+            if decoded_values:
+                list_values = decoded_values.split('x')
+                list_in_floats = []
+                for item in list_values:
+                    if item:
+                        list_in_floats.append(float(item))
+                print(f'Collected {list_in_floats}')
+                
+                pyautogui.move(list_in_floats[0]/15, list_in_floats[1]/15 * (-1))
     except Exception as e:
-        print(f"Error reading data: {e}")
+        print(f"Eroare citire / Port invalid: {e}")
+        try:
+            arduino.close()
+        except:
+            pass
+        arduino = None  # Resetează conexiunea pentru a forța reconectarea la ciclasul următor
 
-schedule.every(10).seconds.do(main_func)
+schedule.every(0.0005).seconds.do(main_func)
 
-print("Running schedule... Press Ctrl+C to exit.")
+print("Rulează programul... Apasă Ctrl+C pentru oprire.")
 try:
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(0.01)
 except KeyboardInterrupt:
-    arduino.close()
-    print("Connection closed safely.")
+    if arduino and arduino.is_open:
+        arduino.close()
+    print("Program oprit.")
