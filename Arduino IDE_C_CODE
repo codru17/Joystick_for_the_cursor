@@ -1,0 +1,31 @@
+#define X_pin A0  // ATENȚIE: pinii analogici pe Arduino se citesc cu A0, A1 etc.
+#define Y_pin A1  // Pinii 7 și 8 sunt digitali (au doar 0 sau 1).
+#define pres_pin 9
+
+int x_value = 0;
+int y_value = 0;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(pres_pin, INPUT_PULLUP);
+}
+
+void loop() {
+  // Pentru analogRead, folosește pinii analogici ai plăcii (ex: A0 și A1)
+  int button_state = digitalRead(pres_pin);
+  x_value = analogRead(X_pin);
+  y_value = analogRead(Y_pin);
+
+  // Trimite datele în formatul: X_value + "x" + Y_value
+  if(x_value <10)x_value =0;
+  if(y_value <10 )y_value =0;
+  Serial.print(x_value-511);
+  Serial.print("x");
+  Serial.print(y_value-507);
+
+  
+  // Trimite caracterul de linie nouă (\n) DOAR la sfârșitul întregului pachet
+  Serial.println(); 
+
+  delay(200);
+}

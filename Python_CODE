@@ -1,0 +1,33 @@
+import serial
+import os
+import time
+import schedule
+
+# Initialize serial connection globally
+arduino = serial.Serial('com3', 9600)
+
+def main_func():
+    try:
+        if arduino.in_waiting > 0:
+            arduino_data = arduino.readline()
+            decoded_values = arduino_data.decode("utf-8").strip()
+            list_values = decoded_values.split('x')
+
+            list_in_floats = []
+            for item in list_values:
+                if item: 
+                    list_in_floats.append(float(item))
+            print(f'Collected {list_in_floats}')
+    except Exception as e:
+        print(f"Error reading data: {e}")
+
+schedule.every(10).seconds.do(main_func)
+
+print("Running schedule... Press Ctrl+C to exit.")
+try:
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+except KeyboardInterrupt:
+    arduino.close()
+    print("Connection closed safely.")
