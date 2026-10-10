@@ -76,5 +76,4 @@ Connect your joystick to the Arduino board as follows:
 
 ---
 
-## 📄 License
-This project is open-source and available under the [MIT License](LICENSE).
+
